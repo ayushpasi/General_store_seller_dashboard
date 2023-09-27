@@ -24,7 +24,7 @@ function saveData(event) {
   // Send a POST request to your server to save the data
   axios
     .post(
-      "https://crudcrud.com/api/292bde80cbd1430a935352286212ea45/itemData",
+      "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData",
       formData
     )
     .then(function (response) {
@@ -53,22 +53,59 @@ function display(obj) {
     "rs" +
     "  " +
     obj.quantity;
-  let buyButton = document.createElement("button");
-  buyButton.textContent = "Buy One";
-  buyButton.addEventListener("click", function () {
+  let buyButton1 = document.createElement("button");
+  buyButton1.textContent = "Buy One";
+  buyButton1.addEventListener("click", function () {
     // Call the buyOne function with the item's ID when the button is clicked
 
-    buyOne(obj._id, obj.quantity);
+    buyOne(obj._id, obj.itemName, obj.description, obj.price, obj.quantity);
   });
 
+  let buyButton2 = document.createElement("button");
+  buyButton2.textContent = "Buy two";
+  buyButton2.addEventListener("click", function () {
+    buyTow(obj._id, obj.itemName, obj.description, obj.price, obj.quantity);
+  });
+
+  let buyButton3 = document.createElement("button");
+  buyButton3.textContent = "Buy three";
+  buyButton3.addEventListener("click", function () {
+    buyThree(obj._id, obj.itemName, obj.description, obj.price, obj.quantity);
+  });
+
+  let deleteItem = document.createElement("button");
+  deleteItem.textContent = "Delete item";
+  deleteItem.addEventListener("click", () => {
+    var itemIdToDelete = obj._id;
+
+    function deleteItem(itemId) {
+      console.log("Deleting item with ID:", itemId);
+      axios
+        .delete(
+          "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData/" +
+            itemId
+        )
+        .then((res) => {
+          console.log("Deleted successfully:", res.data);
+          window.location.reload();
+        })
+        .catch((err) => {
+          console.log("Error deleting item:", err);
+        });
+    }
+    deleteItem(itemIdToDelete);
+  });
   // Append the newly created 'li' element to the 'items' container
+  li.appendChild(buyButton1);
+  li.appendChild(buyButton2);
+  li.appendChild(buyButton3);
+  li.appendChild(deleteItem);
   items.appendChild(li);
-  li.appendChild(buyButton);
 }
 
 window.addEventListener("DOMContentLoaded", () => {
   axios
-    .get("https://crudcrud.com/api/292bde80cbd1430a935352286212ea45/itemData")
+    .get("https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData")
     .then((res) => {
       // Clear any existing items
       document.getElementById("items").innerHTML = "";
@@ -82,22 +119,119 @@ window.addEventListener("DOMContentLoaded", () => {
       console.log(err);
     });
 });
-function buyOne(itemId, currentQuantity) {
-  if (currentQuantity <= 0) {
+function buyOne(itemId, itemName, description, price, quantity) {
+  if (quantity <= 0) {
     // Quantity is already zero or negative, no further action needed
     return;
   }
-
   axios
-    .patch(
-      `https://crudcrud.com/api/292bde80cbd1430a935352286212ea45/itemData/${itemId}`,
-      { quantity: currentQuantity - 1 }
+    .put(
+      "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData/" +
+        itemId,
+      {
+        itemName: itemName,
+        description: description,
+        price: price,
+        quantity: quantity - 1,
+      }
     )
-    .then(function (response) {
-      console.log("Quantity decreased successfully:", response.data);
-      // Refresh the list of items after decreasing quantity
+    .then((res) => {
+      axios
+        .get(
+          "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData"
+        )
+        .then((res) => {
+          // Clear any existing items
+          document.getElementById("items").innerHTML = "";
+
+          // Iterate over the retrieved data and display each item
+          res.data.forEach((item) => {
+            display(item);
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     })
-    .catch(function (error) {
-      console.error("Error decreasing quantity:", error);
+    .catch((err) => {
+      console.log(err);
     });
 }
+function buyTow(itemId, itemName, description, price, quantity) {
+  if (quantity <= 0) {
+    // Quantity is already zero or negative, no further action needed
+    return;
+  }
+  axios
+    .put(
+      "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData/" +
+        itemId,
+      {
+        itemName: itemName,
+        description: description,
+        price: price,
+        quantity: quantity - 2,
+      }
+    )
+    .then((res) => {
+      axios
+        .get(
+          "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData"
+        )
+        .then((res) => {
+          // Clear any existing items
+          document.getElementById("items").innerHTML = "";
+
+          // Iterate over the retrieved data and display each item
+          res.data.forEach((item) => {
+            display(item);
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+function buyThree(itemId, itemName, description, price, quantity) {
+  if (quantity <= 0) {
+    // Quantity is already zero or negative, no further action needed
+    return;
+  }
+  axios
+    .put(
+      "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData/" +
+        itemId,
+      {
+        itemName: itemName,
+        description: description,
+        price: price,
+        quantity: quantity - 3,
+      }
+    )
+    .then((res) => {
+      axios
+        .get(
+          "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData"
+        )
+        .then((res) => {
+          // Clear any existing items
+          document.getElementById("items").innerHTML = "";
+
+          // Iterate over the retrieved data and display each item
+          res.data.forEach((item) => {
+            display(item);
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+//function to delete item
