@@ -1,19 +1,16 @@
 let form = document.getElementById("addItemForm");
 
-// Adding event listener to form
 form.addEventListener("submit", saveData);
 
 // Function to save data in crudcrud
-function saveData(event) {
+async function saveData(event) {
   event.preventDefault(); // Prevent the default form submission
 
-  // Get the form values
   var itemName = document.getElementById("itemname").value;
   var description = document.getElementById("description").value;
   var price = parseFloat(document.getElementById("price").value);
   var quantity = parseInt(document.getElementById("quantity").value);
 
-  // Create a data object to send via Axios
   var formData = {
     itemName: itemName,
     description: description,
@@ -21,29 +18,27 @@ function saveData(event) {
     quantity: quantity,
   };
 
-  // Send a POST request to your server to save the data
-  axios
-    .post(
-      "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData",
+  try {
+    // Send a POST request to your server to save the data
+    const response = await axios.post(
+      "https://crudcrud.com/api/4284f86ca70243ef8d53d5205bc362e0/itemData",
       formData
-    )
-    .then(function (response) {
-      console.log("Data saved successfully:", response.data);
+    );
 
-      // Clear the form fields
-      document.getElementById("addItemForm").reset();
+    console.log("Data saved successfully:", response.data);
 
-      // Call the display function to show the newly added item
-      display(response.data);
-    })
-    .catch(function (error) {
-      console.error("Error saving data:", error);
-    });
+    document.getElementById("addItemForm").reset();
+
+    display(response.data);
+  } catch (error) {
+    console.error("Error saving data:", error);
+  }
 }
 
 function display(obj) {
   let items = document.getElementById("items");
   let li = document.createElement("li");
+  li.className = "list-group-item";
   li.textContent =
     obj.itemName +
     " " +
@@ -53,185 +48,229 @@ function display(obj) {
     "rs" +
     "  " +
     obj.quantity;
+
   let buyButton1 = document.createElement("button");
   buyButton1.textContent = "Buy One";
+  buyButton1.className = "btn btn-primary button";
   buyButton1.addEventListener("click", function () {
-    // Call the buyOne function with the item's ID when the button is clicked
-
     buyOne(obj._id, obj.itemName, obj.description, obj.price, obj.quantity);
   });
 
   let buyButton2 = document.createElement("button");
   buyButton2.textContent = "Buy two";
+  buyButton2.className = "btn btn-primary button";
   buyButton2.addEventListener("click", function () {
     buyTow(obj._id, obj.itemName, obj.description, obj.price, obj.quantity);
   });
 
   let buyButton3 = document.createElement("button");
   buyButton3.textContent = "Buy three";
+  buyButton3.className = "btn btn-primary button";
   buyButton3.addEventListener("click", function () {
     buyThree(obj._id, obj.itemName, obj.description, obj.price, obj.quantity);
   });
 
-  let deleteItem = document.createElement("button");
-  deleteItem.textContent = "Delete item";
-  deleteItem.addEventListener("click", () => {
-    var itemIdToDelete = obj._id;
+  let updateButton = document.createElement("button");
+  updateButton.textContent = "Update item";
+  updateButton.className = "btn btn-primary button";
+  updateButton.addEventListener("click", function () {
+    updateItem(obj._id, obj.itemName, obj.description, obj.price, obj.quantity);
+  });
 
-    function deleteItem(itemId) {
-      console.log("Deleting item with ID:", itemId);
-      axios
-        .delete(
-          "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData/" +
-            itemId
-        )
-        .then((res) => {
-          console.log("Deleted successfully:", res.data);
-          window.location.reload();
-        })
-        .catch((err) => {
-          console.log("Error deleting item:", err);
-        });
-    }
+  let deleteItemButton = document.createElement("button");
+  deleteItemButton.textContent = "Delete item";
+  deleteItemButton.className = "btn btn-danger button";
+  deleteItemButton.addEventListener("click", () => {
+    var itemIdToDelete = obj._id;
     deleteItem(itemIdToDelete);
   });
+
   // Append the newly created 'li' element to the 'items' container
-  li.appendChild(buyButton1);
-  li.appendChild(buyButton2);
+  li.appendChild(deleteItemButton);
+  li.appendChild(updateButton);
   li.appendChild(buyButton3);
-  li.appendChild(deleteItem);
+  li.appendChild(buyButton2);
+  li.appendChild(buyButton1);
+
   items.appendChild(li);
 }
+async function deleteItem(itemId) {
+  console.log("Deleting item with ID:", itemId);
 
-window.addEventListener("DOMContentLoaded", () => {
-  axios
-    .get("https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData")
-    .then((res) => {
-      // Clear any existing items
-      document.getElementById("items").innerHTML = "";
+  try {
+    const response = await axios.delete(
+      `https://crudcrud.com/api/4284f86ca70243ef8d53d5205bc362e0
+/itemData/${itemId}`
+    );
+    console.log("Deleted successfully:", response.data);
+    window.location.reload();
+  } catch (error) {
+    console.log("Error deleting item:", error);
+  }
+}
 
-      // Iterate over the retrieved data and display each item
-      res.data.forEach((item) => {
-        display(item);
-      });
-    })
-    .catch((err) => {
-      console.log(err);
+window.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const res = await axios.get(
+      "https://crudcrud.com/api/4284f86ca70243ef8d53d5205bc362e0/itemData"
+    );
+
+    // Clear any existing items
+    document.getElementById("items").innerHTML = "";
+
+    res.data.forEach((item) => {
+      display(item);
     });
+  } catch (err) {
+    console.log(err);
+  }
 });
-function buyOne(itemId, itemName, description, price, quantity) {
+
+async function buyOne(itemId, itemName, description, price, quantity) {
   if (quantity <= 0) {
-    // Quantity is already zero or negative, no further action needed
     return;
   }
-  axios
-    .put(
-      "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData/" +
-        itemId,
+
+  try {
+    // Update the quantity using Axios
+    const response = await axios.put(
+      `https://crudcrud.com/api/4284f86ca70243ef8d53d5205bc362e0
+/itemData/${itemId}`,
       {
         itemName: itemName,
         description: description,
         price: price,
         quantity: quantity - 1,
       }
-    )
-    .then((res) => {
-      axios
-        .get(
-          "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData"
-        )
-        .then((res) => {
-          // Clear any existing items
-          document.getElementById("items").innerHTML = "";
+    );
 
-          // Iterate over the retrieved data and display each item
-          res.data.forEach((item) => {
-            display(item);
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    })
-    .catch((err) => {
-      console.log(err);
+    // Reload and display the updated items
+    const itemsResponse = await axios.get(
+      "https://crudcrud.com/api/4284f86ca70243ef8d53d5205bc362e0/itemData"
+    );
+    const items = itemsResponse.data;
+
+    // Clear any existing items
+    document.getElementById("items").innerHTML = "";
+
+    // Iterate over the retrieved data and display each item
+    items.forEach((item) => {
+      display(item);
     });
+  } catch (error) {
+    console.log(error);
+  }
 }
-function buyTow(itemId, itemName, description, price, quantity) {
+
+async function buyTow(itemId, itemName, description, price, quantity) {
   if (quantity <= 0) {
     // Quantity is already zero or negative, no further action needed
     return;
   }
-  axios
-    .put(
-      "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData/" +
-        itemId,
+
+  try {
+    const response = await axios.put(
+      `https://crudcrud.com/api/4284f86ca70243ef8d53d5205bc362e0/itemData/${itemId}`,
       {
         itemName: itemName,
         description: description,
         price: price,
         quantity: quantity - 2,
       }
-    )
-    .then((res) => {
-      axios
-        .get(
-          "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData"
-        )
-        .then((res) => {
-          // Clear any existing items
-          document.getElementById("items").innerHTML = "";
+    );
 
-          // Iterate over the retrieved data and display each item
-          res.data.forEach((item) => {
-            display(item);
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    })
-    .catch((err) => {
-      console.log(err);
+    const itemsResponse = await axios.get(
+      "https://crudcrud.com/api/4284f86ca70243ef8d53d5205bc362e0/itemData"
+    );
+    const items = itemsResponse.data;
+
+    // Clear any existing items
+    document.getElementById("items").innerHTML = "";
+
+    // Iterate over the retrieved data and display each item
+    items.forEach((item) => {
+      display(item);
     });
+  } catch (error) {
+    console.log(error);
+  }
 }
-function buyThree(itemId, itemName, description, price, quantity) {
+
+async function buyThree(itemId, itemName, description, price, quantity) {
   if (quantity <= 0) {
-    // Quantity is already zero or negative, no further action needed
     return;
   }
-  axios
-    .put(
-      "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData/" +
-        itemId,
+
+  try {
+    const response = await axios.put(
+      `https://crudcrud.com/api/4284f86ca70243ef8d53d5205bc362e0
+/itemData/${itemId}`,
       {
         itemName: itemName,
         description: description,
         price: price,
         quantity: quantity - 3,
       }
-    )
-    .then((res) => {
-      axios
-        .get(
-          "https://crudcrud.com/api/bef7949c448c45b082716b046c13dbd1/itemData"
-        )
-        .then((res) => {
-          // Clear any existing items
-          document.getElementById("items").innerHTML = "";
+    );
 
-          // Iterate over the retrieved data and display each item
-          res.data.forEach((item) => {
-            display(item);
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    })
-    .catch((err) => {
-      console.log(err);
+    const itemsResponse = await axios.get(
+      "https://crudcrud.com/api/4284f86ca70243ef8d53d5205bc362e0/itemData"
+    );
+    const items = itemsResponse.data;
+
+    document.getElementById("items").innerHTML = "";
+
+    // Iterate over the retrieved data and display each item
+    items.forEach((item) => {
+      display(item);
     });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
-//function to delete item
+async function updateItem(_id, itemName, description, price, quantity) {
+  document.getElementById("itemname").value = itemName;
+  document.getElementById("description").value = description;
+  document.getElementById("price").value = price;
+  document.getElementById("quantity").value = quantity;
+
+  form.removeEventListener("submit", saveData); // Remove the previous listener
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    var updatedItemName = document.getElementById("itemname").value;
+    var updatedDescription = document.getElementById("description").value;
+    var updatedPrice = parseFloat(document.getElementById("price").value);
+    var updatedQuantity = parseInt(document.getElementById("quantity").value);
+
+    var updatedFormData = {
+      itemName: updatedItemName,
+      description: updatedDescription,
+      price: updatedPrice,
+      quantity: updatedQuantity,
+    };
+
+    try {
+      // Send a PUT request to update the data
+      const response = await axios.put(
+        `https://crudcrud.com/api/4284f86ca70243ef8d53d5205bc362e0
+/itemData/${_id}`,
+        updatedFormData
+      );
+
+      console.log("Data updated successfully:", response.data);
+
+      document.getElementById("addItemForm").reset();
+
+      window.location.reload();
+
+      // Reattach the original form submit listener
+      form.removeEventListener("submit", arguments.callee);
+      form.addEventListener("submit", saveData);
+    } catch (error) {
+      console.error("Error updating data:", error);
+    }
+  });
+}
